@@ -1,0 +1,29 @@
+> data1 <- subset(data, BusinessYear=="2016" & IndividualRate<9000)
+> categories <- split(data1$IndividualRate, data1$StateCode)
+> sapply(categories, mean)
+      AK       AL       AR       AZ       DE       FL       GA       HI 
+628.5559 231.6905 297.8289 300.0065 395.5130 272.0886 347.0679 256.3415 
+      IA       ID       IL       IN       KS       LA       ME       MI 
+336.5307      NaN 362.1156 223.1377 251.8667 321.9695 367.2709 174.7030 
+      MO       MS       MT       NC       ND       NE       NH       NJ 
+195.1682 237.5666 331.8849 247.9497 255.6825 244.6169 352.9327 449.6506 
+      NM       NV       OH       OK       OR       PA       SC       SD 
+240.6293 328.1119 265.9548 316.4716 307.9747 324.7291 381.5554 348.9964 
+      TN       TX       UT       VA       WI       WV       WY 
+347.2698 233.6796 282.9166 258.5682 495.1364 396.8953 389.7864 
+> sapply(categories, median)
+     AK      AL      AR      AZ      DE      FL      GA      HI      IA 
+581.900  42.240 288.025 266.670 374.005 231.840 320.425 243.105 318.460 
+     ID      IL      IN      KS      LA      ME      MI      MO      MS 
+     NA 333.500  35.910 219.650 290.050 329.040  33.900  35.700 230.125 
+     MT      NC      ND      NE      NH      NJ      NM      NV      OH 
+313.000  36.100 225.555  41.500 318.660 459.480 226.370 308.290  38.680 
+     OK      OR      PA      SC      SD      TN      TX      UT      VA 
+292.510 287.000 302.830 360.800 336.580 298.335  99.990 282.420 237.425 
+     WI      WV      WY 
+444.110 375.855 391.830 
+> lengths(categories, use.names=TRUE)
+    AK     AL     AR     AZ     DE     FL     GA     HI     IA     ID     IL     IN     KS     LA     ME     MI     MO     MS     MT     NC     ND     NE 
+ 26080  58462  20930  56643   6256 527660 197774   1518  39898      0 138691 163240  39398  53450  32810 283850  55424  14536  48608 132498  25840  20672 
+    NH     NJ     NM     NV     OH     OK     OR     PA     SC     SD     TN     TX     UT     VA     WI     WV     WY 
+  9352  79617   9844  15180 354004  50436  28336 118990 661756  23808  57556 262028  25122  99240 389894  66446  17298 
