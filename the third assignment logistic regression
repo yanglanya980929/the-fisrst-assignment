@@ -1,0 +1,96 @@
+rm(list=ls())
+install.packages("foreign")
+install.packages("Hmisc")
+install.packages("ROCR")
+library(foreign)
+library(Hmisc)
+library(ROCR)
+dt1<-sasxport.get("C:/Users/DTQ/Desktop/20190722/DPQ_I.XPT")
+dt2<-sasxport.get("C:/Users/DTQ/Desktop/20190722/DR1TOT_I.XPT")
+dt3<-sasxport.get("C:/Users/DTQ/Desktop/20190722/DR2TOT_I.XPT")
+dt4<-sasxport.get("C:/Users/DTQ/Desktop/20190722/DRXFCD_I.XPT")
+dt5<-sasxport.get("C:/Users/DTQ/Desktop/20190722/DR1IFF_I.XPT")
+dt6<-sasxport.get("C:/Users/DTQ/Desktop/20190722/DR2IFF_I.XPT")
+#write.csv(dt1,file="C:/Users/DTQ/Desktop/20190722/DPQ_I.csv")
+
+a<-c()
+for(i in 1:dim(dt1)[1]){
+  if(all(is.na(dt1[i,2:11]))){
+    a[i]<-F
+  }else{
+    a[i]<-T
+  }
+}
+dt1<-dt1[a,]
+
+dt1$y<-NA
+for(i in 1:dim(dt1)[1]){
+  if(all(na.omit(as.numeric(dt1[i,c(2:11)]))==rep(0,length(na.omit(as.numeric(dt1[i,c(2:11)])))))){
+    dt1$y[i]<-0
+  }else{
+    dt1$y[i]<-1
+  }
+  print(i)
+}
+
+inter_name<-intersect(colnames(dt2),colnames(dt3))
+dt3<-dt3[,!grepl("wtdrd1|wtdr2d|drabf|drdint",colnames(dt3))]
+
+a<-c()
+for(i in 1:dim(dt2)[2]){
+  if(length(na.omit(dt2[,i]))/dim(dt2)[1]<0.8){
+     print(colnames(dt2)[i])
+     a[i]<-F
+  }else{
+    a[i]<-T
+  }
+}
+dt2<-dt2[,a]
+
+a<-c()
+for(i in 1:dim(dt3)[2]){
+  if(length(na.omit(dt3[,i]))/dim(dt3)[1]<0.7){
+    print(colnames(dt3)[i])
+    a[i]<-F
+  }else{
+    a[i]<-T
+  }
+}
+dt3<-dt3[,a]
+
+dt5<-dt5[,-c(2:18)]
+dt6<-dt6[,-c(2:18)]
+dt5$seqn<-as.factor(dt5$seqn)
+dt6$seqn<-as.factor(dt6$seqn)
+dt5<-aggregate(.~seqn,data=dt5,sd)
+dt6<-aggregate(.~seqn,data=dt5,sd)
+
+dt<-merge(dt1,dt2,by="seqn",all.x = T)
+dt<-merge(dt,dt3,by="seqn",all.x = T)
+dt<-merge(dt,dt5,by="seqn",all.x = T)
+dt<-merge(dt,dt6,by="seqn",all.x = T)
+dt<-dt[,-c(1:11)]
+a<-c()
+for(i in 1:dim(dt)[2]){
+  if(length(na.omit(dt[,i]))/dim(dt)[1]<0.7){
+    print(colnames(dt)[i])
+    a[i]<-F
+  }else{
+    a[i]<-T
+  }
+}
+dt<-dt[,a]
+
+set.seed(2019)
+index<-sample(1:dim(dt)[1],0.7*dim(dt)[1])
+training_data<-dt[index,]
+testing_data<-dt[-index,]
+
+glm_model<-glm(y~.,family = binomial(link = logit), data = training_data )
+summary(glm_model)
+
+pre<-predict(glm_model,newdata=testing_data,type="response")
+testing_data$pro<-pre
+pred<-prediction(pre,testing_data$y)
+perf<-performance(pred,'auc')
+perf@y.values
